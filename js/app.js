@@ -30,7 +30,24 @@ function toggleTheme(){ document.documentElement.classList.toggle('light'); if(d
 function copyCode(){ navigator.clipboard.writeText(codeInput.value).then(()=>alert('Copied to clipboard')) }
 function clearEditor(){ titleInput.value=''; codeInput.value=''; tags.clear(); renderTags(); editingId=null; explainBox.style.display='none' }
 function analyzeCode(src){ if(!src){ errorCount.textContent='0'; return } try{ esprima.parseScript(src, {tolerant:true}); const parsed = esprima.parseScript(src, {tolerant:true}); const errors = parsed.errors||[]; const found = (errors&&errors.length)?errors.length:0; errorCount.textContent = found } catch(e){ errorCount.textContent = '1' } }
-async function explainErrors(){ const src = codeInput.value; if(!src){ explainBox.style.display='block'; explainBox.textContent='No code to analyze.'; return } explainBox.style.display='block'; explainBox.textContent='Thinking...' try{ const resp = await explainWithServer(src); explainBox.textContent = resp.explanation || JSON.stringify(resp, null, 2) } catch(e){ explainBox.textContent = 'Explain failed: '+e.message } }
+async function explainErrors() {
+  const src = codeInput.value;
+  if (!src) {
+    explainBox.style.display = 'block';
+    explainBox.textContent = 'No code to analyze.';
+    return;
+  }
+
+  explainBox.style.display = 'block';
+  explainBox.textContent = 'Thinking...';
+
+  try {
+    const resp = await explainWithServer(src);
+    explainBox.textContent = resp.explanation || JSON.stringify(resp, null, 2);
+  } catch (e) {
+    explainBox.textContent = 'Explain failed: ' + e.message;
+  }
+}
 function runSnippet(){ const lang = langSelect.value; const code = codeInput.value; if(lang==='javascript'){ const prefix='<!doctype html><html><body><script>\ntry{\n'; const suffix='\n}catch(e){document.body.innerText = "Runtime error: "+e.message}</script></body></html>'; runFrame.srcdoc = prefix + code + suffix } else if(lang==='html'){ runFrame.srcdoc = code } else { runFrame.srcdoc = `<pre style="color:#e6eef8;background:#08121a;padding:12px">Running for ${lang} is not supported in this sandbox.</pre>` } }
 async function saveSnippet(){ if(!currentUser){ alert('Please sign in to save snippets'); return } const title = titleInput.value || 'Untitled'; const content = codeInput.value || ''; const lang = langSelect.value; const isPublic = document.getElementById('publicToggle').checked; const snippet = { title, content, lang, tags: Array.from(tags), owner: currentUser.uid, ownerName: currentUser.displayName || 'Anon', public: isPublic, createdAt: serverTimestamp() } try{ if(editingId){ const d = doc(db, 'snippets', editingId); await updateDoc(d, snippet); alert('Updated snippet') } else { await addDoc(collection(db, 'snippets'), snippet); alert('Saved snippet') } clearEditor(); renderLibrary() } catch(e){ alert('Save failed: '+e.message) } }
 async function renderLibrary(){ libList.innerHTML = ''; const qText = document.getElementById('searchInput').value.trim().toLowerCase(); const q = query(collection(db, 'snippets'), orderBy('createdAt', 'desc'), limit(100)); const snapshot = await getDocs(q); const docs = snapshot.docs.map(d=>({ id:d.id, ...d.data() })); const filtered = docs.filter(s=>{ if(document.getElementById('mySnippetsBtn').classList.contains('active')){ return currentUser && s.owner === currentUser.uid } if(document.getElementById('libraryBtn').classList.contains('active')){ return s.public } if(document.getElementById('newBtn').classList.contains('active')) return true if(qText){ return (s.title && s.title.toLowerCase().includes(qText)) || (s.tags && s.tags.join(' ').toLowerCase().includes(qText)) || (s.lang && s.lang.toLowerCase().includes(qText)) } return s.public || (currentUser && s.owner === currentUser.uid) }); filtered.forEach(s=>{ const card = document.createElement('div'); card.className='snippet-card'; const h = document.createElement('h3'); h.textContent = s.title || 'Untitled'; card.appendChild(h); const m = document.createElement('div'); m.className='snippet-meta'; m.innerHTML = `<div class='muted-small'>${s.lang}</div><div class='muted-small'>by ${s.ownerName||'Anon'}</div>`; card.appendChild(m); const pre = document.createElement('pre'); pre.style.marginTop='8px'; pre.innerHTML = `<code class='language-${s.lang}'>${escapeHtml(s.content).substring(0,600)}</code>`; card.appendChild(pre); const actions = document.createElement('div'); actions.style.marginTop='8px'; actions.className='row'; const viewBtn = document.createElement('button'); viewBtn.className='btn secondary'; viewBtn.textContent='Load'; viewBtn.onclick = ()=>{ loadSnippetIntoEditor(s) }; const forkBtn = document.createElement('button'); forkBtn.className='btn'; forkBtn.textContent='Fork'; forkBtn.onclick = ()=>{ forkSnippet(s) }; actions.appendChild(viewBtn); actions.appendChild(forkBtn); card.appendChild(actions); libList.appendChild(card); Prism.highlightElement(pre.querySelector('code')) }) }
