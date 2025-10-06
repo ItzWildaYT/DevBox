@@ -1,14 +1,19 @@
 export default async function explainWithServer(code) {
-  const response = await fetch('/.netlify/functions/explain', {
-    method: 'POST',
+  const response = await fetch("/.netlify/functions/explain", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ code }),
-    headers: { 'Content-Type': 'application/json' },
   });
 
   if (!response.ok) {
-    throw new Error('Failed to get explanation');
+    let errMsg = "Failed to get explanation";
+    try {
+      const data = await response.json();
+      if (data.error) errMsg += ": " + data.error;
+    } catch {}
+    throw new Error(errMsg);
   }
 
-  const data = await response.json();
-  return data;
+  return await response.json();
 }
+
