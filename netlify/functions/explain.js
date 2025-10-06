@@ -4,18 +4,23 @@ export async function handler(event, context) {
     const { code } = JSON.parse(event.body);
     if (!code) throw new Error("No code provided");
 
-    const apiKey = "AIzaSyBEWSm8AA9WKUM16lhsa2yctZpmKQEy0tE";
+    const apiKey = process.env.GEMINI_API_KEY;
 
     const response = await fetch(
-      "https://api.google.com/gemini/v1/models/gemini-2.5-flash:generate",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
+          "Authorization": `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          inputs: [{ content: `Explain this code:\n${code}` }],
+          contents: [
+            {
+              parts: [{ text: `Explain this code:\n${code}` }],
+              role: "user",
+            },
+          ],
         }),
       }
     );
@@ -26,11 +31,10 @@ export async function handler(event, context) {
     }
 
     const data = await response.json();
-
     return {
       statusCode: 200,
       body: JSON.stringify({
-        explanation: data.outputs?.[0]?.content || "No explanation returned",
+        explanation: data.text || "No explanation returned",
       }),
     };
   } catch (err) {
