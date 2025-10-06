@@ -109,19 +109,19 @@ function analyzeCode(src) {
 async function explainErrors() {
   const src = codeInput.value;
   if (!src) {
-    explainBox.style.display = 'block';
-    explainBox.textContent = 'No code to analyze.';
+    explainBox.style.display = "block";
+    explainBox.textContent = "No code to analyze.";
     return;
   }
 
-  explainBox.style.display = 'block';
-  explainBox.textContent = 'Thinking...';
+  explainBox.style.display = "block";
+  explainBox.textContent = "Thinking...";
 
   try {
     const resp = await explainWithServer(src);
-    explainBox.textContent = resp.explanation || JSON.stringify(resp, null, 2);
+    explainBox.textContent = resp.explanation;
   } catch (e) {
-    explainBox.textContent = 'Explain failed: ' + e.message;
+    explainBox.textContent = "Explain failed: " + e.message;
   }
 }
 
