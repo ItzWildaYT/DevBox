@@ -4,10 +4,10 @@ export async function handler(event, context) {
     const { code } = JSON.parse(event.body);
     if (!code) throw new Error("No code provided");
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.BLACKBOX_API_KEY;
 
     const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+      "https://api.blackbox.ai/chat/completions",
       {
         method: "POST",
         headers: {
@@ -15,26 +15,30 @@ export async function handler(event, context) {
           "Authorization": `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          contents: [
+          model: "blackboxai/openai/gpt-4",
+          messages: [
             {
-              parts: [{ text: `Explain this code:\n${code}` }],
               role: "user",
+              content: `Explain this code:\n${code}`,
             },
           ],
+          temperature: 0.7,
+          max_tokens: 256,
+          stream: false,
         }),
       }
     );
 
     if (!response.ok) {
       const text = await response.text();
-      throw new Error(`Gemini API error: ${response.status} ${text}`);
+      throw new Error(`BlackBox API error: ${response.status} ${text}`);
     }
 
     const data = await response.json();
     return {
       statusCode: 200,
       body: JSON.stringify({
-        explanation: data.text || "No explanation returned",
+        explanation: data.choices[0].message.content || "No explanation returned",
       }),
     };
   } catch (err) {
