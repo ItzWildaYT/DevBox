@@ -16,4 +16,3 @@ export default async function explainWithServer(code) {
 
   return await response.json();
 }
-
