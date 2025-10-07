@@ -44,49 +44,78 @@ function analyzeCode() {
     codeInput.classList.remove('error')
     return
   }
-  try {
-    if (lang === 'javascript') {
-      const result = esprima.parseScript(code, { tolerant: true })
-      if (result.errors && result.errors.length) {
+try {
+  const codeTrimmed = code.trim()
+  if (!codeTrimmed) {
+    hideError()
+    return
+  }
+
+  if (lang === 'javascript') {
+    if (typeof esprima !== 'undefined') {
+      const result = esprima.parseScript(codeTrimmed, { tolerant: true, loc: true })
+      if (result.errors && result.errors.length > 0) {
         const e = result.errors[0]
-        showError(`⚠️ JavaScript Error at line ${e.lineNumber}: ${e.description}`)
+        const line = e.lineNumber || (e.line || 0)
+        const col = e.column || 0
+        showError(`⚠️ JavaScript Error at line ${line}, column ${col}: ${e.description || e.message}`)
       } else hideError()
-    } else if (lang === 'html') {
-      const messages = HTMLHint.verify(code)
-      if (messages.length) {
+    } else showError('⚠️ JavaScript analyzer not loaded.')
+
+  } else if (lang === 'html') {
+    if (typeof HTMLHint !== 'undefined' && HTMLHint && typeof HTMLHint.verify === 'function') {
+      const messages = HTMLHint.verify(codeTrimmed)
+      if (messages.length > 0) {
         const msg = messages[0]
-        showError(`⚠️ HTML Issue at line ${msg.line}: ${msg.message}`)
+        showError(`⚠️ HTML Issue at line ${msg.line || '?'}: ${msg.message}`)
       } else hideError()
-    } else if (lang === 'css') {
-      const result = CSSLint.verify(code)
-      if (result.messages.length) {
+    } else showError('⚠️ HTML analyzer not loaded.')
+
+  } else if (lang === 'css') {
+    if (typeof CSSLint !== 'undefined' && CSSLint && typeof CSSLint.verify === 'function') {
+      const result = CSSLint.verify(codeTrimmed)
+      if (result.messages && result.messages.length > 0) {
         const m = result.messages[0]
-        showError(`⚠️ CSS Issue at line ${m.line}: ${m.message}`)
+        const type = m.type === 'error' ? 'Error' : 'Warning'
+        const line = m.line || '?'
+        const col = m.col || '?'
+        showError(`⚠️ CSS ${type} at line ${line}, column ${col}: ${m.message}`)
       } else hideError()
-    } else if (lang === 'python') {
+    } else showError('⚠️ CSS analyzer not loaded.')
+
+  } else if (lang === 'python') {
+    if (typeof Sk !== 'undefined' && Sk.importMainWithBody) {
       try {
-        Sk.importMainWithBody('<stdin>', false, code)
+        Sk.configure({ output: () => {}, read: (x) => Sk.builtinFiles.files[x] || null })
+        Sk.importMainWithBody('<stdin>', false, codeTrimmed)
         hideError()
       } catch (err) {
-        showError(`⚠️ Python Error: ${err.toString().split('\n')[0]}`)
+        const msg = err.toString().split('\n')[0]
+        showError(`⚠️ Python Error: ${msg}`)
       }
-    }
-  } catch (err) {
-    showError(`⚠️ Syntax Error: ${err.message}`)
+    } else showError('⚠️ Python analyzer not loaded.')
+
+  } else {
+    showError('⚠️ Unsupported language selected.')
   }
+} catch (err) {
+  showError(`⚠️ Syntax Error: ${err.message || 'Unknown parsing error.'}`)
 }
 
 function showError(msg) {
+  if (!errorBox) return
   errorBox.textContent = msg
   errorBox.classList.remove('hidden')
-  codeInput.classList.add('error')
+  codeInput && codeInput.classList.add('error')
 }
 
 function hideError() {
+  if (!errorBox) return
   errorBox.textContent = ''
   errorBox.classList.add('hidden')
-  codeInput.classList.remove('error')
+  codeInput && codeInput.classList.remove('error')
 }
+
 
 if (saveBtn) saveBtn.addEventListener('click', saveSnippet)
 if (runBtn) runBtn.addEventListener('click', runSnippet)
