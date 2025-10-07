@@ -3,78 +3,96 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>DevBox</title>
+  <title>DevoBox</title>
+  <link rel="icon" type="image/png" href="/assets/logo-placeholder.png">
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
 </head>
 <body>
   <div class="app">
+    <!-- ========== SIDEBAR ========== -->
     <aside class="sidebar">
       <div class="logo">
-        <div class="mark">DB</div>
+        <img src="/assets/logo-placeholder.png" alt="DevBox Logo" class="logo-img" style="width:40px;height:40px;border-radius:8px;object-fit:cover;margin-right:10px;">
         <div>
-          <h1>DevBox</h1>
+          <h1>DevoBox</h1>
           <div class="muted">Save • Debug • Run</div>
         </div>
       </div>
-      <div class="row" style="margin-bottom:10px">
+
+      <div class="row" style="margin-bottom:10px;">
         <input id="searchInput" class="search" placeholder="Search snippets, tags, languages...">
       </div>
-<div class="nav">
-  <button class="active" data-target="newSnippet">New Snippet</button>
-  <button data-target="publicLibrary">Public Library</button>
-  <button data-target="mySnippets">My Snippets</button>
-  <button data-target="profile">Profile</button>
-</div>
-      <div style="margin-top:14px">
+
+      <nav class="nav">
+        <button class="active" data-target="newSnippet">New Snippet</button>
+        <button data-target="publicLibrary">Public Library</button>
+        <button data-target="mySnippets">My Snippets</button>
+        <button data-target="profile">Profile</button>
+      </nav>
+
+      <div style="margin-top:14px;">
         <div class="muted-small">Theme</div>
-        <div style="display:flex;gap:8px;margin-top:8px">
+        <div style="display:flex;gap:8px;margin-top:8px;">
           <button id="themeToggle" class="btn secondary">Toggle Dark</button>
         </div>
       </div>
-      <div style="margin-top:14px">
+
+      <div style="margin-top:14px;">
         <div id="authArea">
           <button id="signInBtn" class="btn">Sign in with Google</button>
         </div>
       </div>
     </aside>
 
+    <!-- ========== MAIN CONTENT ========== -->
     <main class="main">
-  <section id="newSnippet" class="section">
-    <h2>New Snippet</h2>
-    <textarea id="codeInput" class="code" placeholder="Write your code..."></textarea>
-    <button class="btn">Save</button>
-  </section>
+      <!-- New Snippet Section -->
+      <section id="newSnippet" class="section">
+        <h2>New Snippet</h2>
+        <textarea id="codeInput" class="code" placeholder="Write your code..."></textarea>
+        <button class="btn">Save</button>
+      </section>
 
-  <section id="publicLibrary" class="section hidden">
-    <h2>Public Library</h2>
-    <div id="libraryContainer"></div>
-  </section>
+      <!-- Public Library Section -->
+      <section id="publicLibrary" class="section hidden">
+        <h2>Public Library</h2>
+        <div id="libraryContainer"></div>
+      </section>
 
-  <section id="mySnippets" class="section hidden">
-    <h2>My Snippets</h2>
-    <div id="mySnippetsContainer"></div>
-  </section>
+      <!-- My Snippets Section -->
+      <section id="mySnippets" class="section hidden">
+        <h2>My Snippets</h2>
+        <div id="mySnippetsContainer"></div>
+      </section>
 
-  <section id="profile" class="section hidden">
-    <h2>Profile</h2>
-    <p>Signed in as Itz Wilda</p>
-  </section>
-</main>
+      <!-- Profile Section -->
+      <section id="profile" class="section hidden">
+        <h2>Profile</h2>
+        <p>Signed in as Itz Wilda</p>
+      </section>
+    </main>
 
+    <!-- ========== RIGHT PANEL ========== -->
     <aside class="right">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <h3 style="margin:0">Public Library</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h3 style="margin:0;">Public Library</h3>
         <div class="muted-small">Browse & fork</div>
       </div>
+
       <div id="libList" class="lib-list"></div>
-      <div style="margin-top:12px">
+
+      <div style="margin-top:12px;">
         <div class="muted-small">Run Output</div>
-        <iframe id="runFrame" style="width:100%;height:200px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:#020409;margin-top:6px"></iframe>
+        <iframe
+          id="runFrame"
+          style="width:100%;height:200px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:#020409;margin-top:6px;">
+        </iframe>
       </div>
     </aside>
   </div>
 
+  <!-- ========== SCRIPTS ========== -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
