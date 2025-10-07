@@ -314,3 +314,11 @@ async function googleSignIn() {
     showToast('error', 'Sign in failed')
   }
 }
+document.addEventListener('DOMContentLoaded', async () => {
+  if (window.location.pathname.endsWith('library.html')) {
+    await renderLibrary(); 
+  }
+  if (window.location.pathname.endsWith('my-snippets.html')) {
+    await renderMySnippets(); 
+  }
+});
