@@ -46,19 +46,36 @@ html, body {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-weight: 700;
-  font-size: 20px;
-  color: white;
   margin-bottom: 24px;
 }
 
 .logo-icon {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: 10px;
   object-fit: cover;
   box-shadow: 0 0 15px rgba(124, 58, 237, 0.4);
 }
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.logo-title {
+  font-weight: 700;
+  font-size: 20px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.logo .muted {
+  color: var(--muted);
+  font-size: 13px;
+}
+
 
 .nav {
   display: flex;
