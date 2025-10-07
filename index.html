@@ -29,21 +29,21 @@
     </aside>
 
     <!-- MAIN -->
-    <main class="main">
-      <h2>New Snippet</h2>
-      <textarea id="codeInput" class="code" placeholder="Write your code..."></textarea>
+<h2>New Snippet</h2>
 
-      <div class="controls">
-        <div class="row">
-          <label><input type="checkbox" id="saveToProfile" checked> Save to Profile</label>
-          <label><input type="checkbox" id="publishPublic"> Publish to Public</label>
-        </div>
-        <div class="row">
-          <button id="runBtn" class="btn secondary">Run</button>
-          <button id="clearBtn" class="btn secondary">Clear</button>
-          <button id="saveBtn" class="btn">Save</button>
-        </div>
-      </div>
+<div class="row" style="margin-bottom:10px;">
+  <label for="langSelect" class="muted-small">Language:</label>
+  <select id="langSelect" class="select">
+    <option value="javascript" selected>JavaScript</option>
+    <option value="html">HTML</option>
+    <option value="css">CSS</option>
+    <option value="python">Python</option>
+  </select>
+</div>
+
+<textarea id="codeInput" class="code" placeholder="Write your code..."></textarea>
+
+<div id="errorBox" class="error-box hidden"></div>
 
       <div style="margin-top:16px;">
         <div class="muted-small">Code Output</div>
