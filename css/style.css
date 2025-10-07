@@ -43,14 +43,21 @@ html, body {
 }
 
 .logo {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-weight: 700;
-  font-size: 22px;
+  font-size: 20px;
   color: white;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+}
+
+.logo-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  object-fit: cover;
+  box-shadow: 0 0 15px rgba(124, 58, 237, 0.4);
 }
 
 .nav {
