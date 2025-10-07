@@ -199,7 +199,7 @@ button:focus {
     grid-auto-rows: auto;
   }
 
-.section.hidden {
+.hidden {
   display: none;
 }
  
