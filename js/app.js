@@ -31,7 +31,6 @@ const runFrame = document.getElementById('runFrame');
 const errorCount = document.getElementById('errorCount');
 const explainBox = document.getElementById('explainBox');
 
-// Event listeners
 document.getElementById('saveBtn').addEventListener('click', saveSnippet);
 document.getElementById('clearBtn').addEventListener('click', clearEditor);
 document.getElementById('copyBtn').addEventListener('click', copyCode);
@@ -55,10 +54,6 @@ tagInput.addEventListener('keydown', (e) => {
 codeInput.addEventListener('input', () => {
   analyzeCode(codeInput.value);
 });
-
-// =====================
-// Functions
-// =====================
 
 function showView(view) {
   document.querySelectorAll('.nav button').forEach((b) => b.classList.remove('active'));
@@ -130,21 +125,13 @@ function runSnippet() {
   const code = codeInput.value;
 
   if (lang === 'javascript') {
-    const prefix = `<!doctype html><html><body><script>
-try {
-`;
-    const suffix = `
-} catch(e) {
-  document.body.innerText = "Runtime error: " + e.message;
-}
-</script></body></html>`;
+    const prefix = `<!doctype html><html><body><script>try {`;
+    const suffix = `} catch(e) { document.body.innerText = "Runtime error: " + e.message; }</script></body></html>`;
     runFrame.srcdoc = prefix + code + suffix;
   } else if (lang === 'html') {
     runFrame.srcdoc = code;
   } else {
-    runFrame.srcdoc = `<pre style="color:#e6eef8;background:#08121a;padding:12px">
-Running for ${lang} is not supported in this sandbox.
-</pre>`;
+    runFrame.srcdoc = `<pre style="color:#e6eef8;background:#08121a;padding:12px">Running for ${lang} is not supported in this sandbox.</pre>`;
   }
 }
 
