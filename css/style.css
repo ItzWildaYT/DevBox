@@ -271,4 +271,22 @@ iframe {
   .main {
     margin-top: 12px;
   }
+
+  .code {
+  width: 100%;
+  min-height: 400px;
+  max-height: 60vh;
+}
+
+.output-block {
+  margin-top: 20px;
+}
+
+#runFrame {
+  width: 100%;
+  min-height: 300px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #04080d;
+}
 }
