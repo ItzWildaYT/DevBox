@@ -168,8 +168,8 @@ async function finalizeSave() {
     runFrame.srcdoc = ''
     hideError()
     showToast('success', 'Snippet saved')
-    if (window.location.pathname.endsWith('my-snippets.html')) await renderMySnippets()
-    if (window.location.pathname.endsWith('library.html')) await renderLibrary()
+      if (window.location.pathname.endsWith('my-snippets.html')) renderMySnippets();
+      if (window.location.pathname.endsWith('library.html')) renderLibrary();
   } catch {
     showToast('error', 'Save failed')
   }
