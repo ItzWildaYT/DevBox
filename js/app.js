@@ -57,8 +57,9 @@ if (!toastContainer) {
 function showToast(type, text) {
   const node = document.createElement('div')
   node.className = 'toast'
+  node.textContent = text
   node.style.minWidth = '140px'
-  node.style.padding = '12px'
+  node.style.padding = '12px 16px'
   node.style.borderRadius = '999px'
   node.style.display = 'flex'
   node.style.alignItems = 'center'
@@ -69,17 +70,10 @@ function showToast(type, text) {
   node.style.color = '#fff'
   node.style.userSelect = 'none'
   node.style.transition = 'transform .12s ease, opacity .12s ease'
-  if (type === 'success') {
-    node.style.background = 'linear-gradient(90deg,#10b981,#06b6d4)'
-  } else if (type === 'error') {
-    node.style.background = 'linear-gradient(90deg,#ef4444,#f97316)'
-  } else {
-    node.style.background = 'rgba(0,0,0,0.6)'
-  }
-  node.textContent = text
-  node.onclick = () => {
-    node.remove()
-  }
+  if (type === 'success') node.style.background = 'linear-gradient(90deg,#10b981,#06b6d4)'
+  else if (type === 'error') node.style.background = 'linear-gradient(90deg,#ef4444,#f97316)'
+  else node.style.background = 'rgba(0,0,0,0.6)'
+  node.onclick = () => node.remove()
   toastContainer.appendChild(node)
   setTimeout(() => {
     node.style.opacity = '0'
@@ -197,15 +191,17 @@ async function finalizeSave() {
     showToast('error', 'Cannot save empty code')
     return
   }
+  const ownerValue = (saveToProfile && saveToProfile.checked) ? currentUser.uid : null
+  const isPublic = !!(publishPublic && publishPublic.checked)
   const snippet = {
     title,
     description: desc,
     tags,
     content,
     lang,
-    owner: saveToProfile && saveToProfile.checked ? currentUser.uid : 'anonymous',
+    owner: ownerValue,
     ownerName: currentUser.displayName || 'Anon',
-    public: publishPublic && publishPublic.checked,
+    public: isPublic,
     createdAt: serverTimestamp()
   }
   try {
@@ -216,6 +212,7 @@ async function finalizeSave() {
     hideError()
     showToast('success', 'Snippet saved')
     if (window.location.pathname.endsWith('my-snippets.html')) await renderMySnippets()
+    if (window.location.pathname.endsWith('library.html')) await renderLibrary()
   } catch (e) {
     showToast('error', 'Save failed')
   }
@@ -278,7 +275,7 @@ async function renderLibrary() {
   if (!libList) return
   libList.innerHTML = ''
   const search = (searchInput && searchInput.value.trim().toLowerCase()) || ''
-  const q = query(collection(db, 'snippets'), orderBy('createdAt', 'desc'), limit(100))
+  const q = query(collection(db, 'snippets'), orderBy('createdAt', 'desc'), limit(200))
   const snapshot = await getDocs(q)
   let found = false
   snapshot.forEach(docSnap => {
@@ -287,13 +284,14 @@ async function renderLibrary() {
     const title = (s.title || 'Untitled').toString()
     const ownerName = (s.ownerName || 'Anon').toString()
     if (search && !title.toLowerCase().includes(search) && !ownerName.toLowerCase().includes(search)) return
+    const date = s.createdAt && s.createdAt.toDate ? s.createdAt.toDate().toLocaleString() : 'Unknown date'
     const card = document.createElement('div')
     card.className = 'snippet-card'
     const desc = s.description ? `<div class="muted-small" style="margin-top:6px">${escapeHtml(s.description.substring(0, 200))}</div>` : ''
     const tags = s.tags && s.tags.length ? `<div style="margin-top:8px;"><small class="muted-small">${s.tags.map(t => `#${escapeHtml(t)}`).join(' ')}</small></div>` : ''
     card.innerHTML = `
       <h3>${escapeHtml(title)}</h3>
-      <div class="snippet-meta muted-small">${escapeHtml(s.lang)} • by ${escapeHtml(ownerName)}</div>
+      <div class="snippet-meta muted-small">${escapeHtml(s.lang)} • by ${escapeHtml(ownerName)} • ${escapeHtml(date)}</div>
       <pre style="margin-top:8px;"><code class="language-javascript">${escapeHtml(s.content.substring(0, 400))}</code></pre>
       ${desc}
       ${tags}
@@ -312,7 +310,7 @@ async function renderMySnippets() {
     mySnippetsList.innerHTML = "<p class='muted'>Please sign in to view your snippets.</p>"
     return
   }
-  const q = query(collection(db, 'snippets'), where('owner', '==', currentUser.uid), orderBy('createdAt', 'desc'), limit(100))
+  const q = query(collection(db, 'snippets'), where('owner', '==', currentUser.uid), orderBy('createdAt', 'desc'), limit(200))
   const snapshot = await getDocs(q)
   if (!snapshot || snapshot.empty) {
     mySnippetsList.innerHTML = "<p class='muted'>You haven't saved any snippets yet.</p>"
@@ -320,13 +318,14 @@ async function renderMySnippets() {
   }
   snapshot.forEach(docSnap => {
     const s = docSnap.data()
+    const date = s.createdAt && s.createdAt.toDate ? s.createdAt.toDate().toLocaleString() : 'Unknown date'
     const card = document.createElement('div')
     card.className = 'snippet-card'
     const desc = s.description ? `<div class="muted-small" style="margin-top:6px">${escapeHtml(s.description.substring(0, 200))}</div>` : ''
     const tags = s.tags && s.tags.length ? `<div style="margin-top:8px;"><small class="muted-small">${s.tags.map(t => `#${escapeHtml(t)}`).join(' ')}</small></div>` : ''
     card.innerHTML = `
       <h3>${escapeHtml(s.title || 'Untitled')}</h3>
-      <div class="snippet-meta muted-small">${escapeHtml(s.lang)} • ${s.public ? '🌍 Public' : '🔒 Private'}</div>
+      <div class="snippet-meta muted-small">${escapeHtml(s.lang)} • ${s.public ? '🌍 Public' : '🔒 Private'} • ${escapeHtml(date)}</div>
       <pre style="margin-top:8px;"><code class="language-javascript">${escapeHtml(s.content.substring(0, 400))}</code></pre>
       ${desc}
       ${tags}
@@ -362,14 +361,12 @@ function updateProfileUI() {
     authArea.appendChild(img)
     authArea.appendChild(name)
     authArea.appendChild(out)
-    if (saveBtn) saveBtn.disabled = false
   } else {
     const btn = document.createElement('button')
     btn.className = 'btn'
     btn.textContent = 'Sign in with Google'
     btn.onclick = googleSignIn
     authArea.appendChild(btn)
-    if (saveBtn) saveBtn.disabled = false
   }
 }
 
