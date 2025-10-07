@@ -29,6 +29,67 @@ const mySnippetsList = document.getElementById('mySnippetsList');
 const signOutBtn = document.getElementById('signOutBtn');
 const searchInput = document.getElementById('searchInput');
 
+const langSelect = document.getElementById('langSelect');
+const errorBox = document.getElementById('errorBox');
+
+if (codeInput) {
+  codeInput.addEventListener('input', () => analyzeCode());
+  langSelect.addEventListener('change', () => analyzeCode());
+}
+
+function analyzeCode() {
+  const code = codeInput.value.trim();
+  const lang = langSelect.value;
+  if (!code) {
+    errorBox.classList.add('hidden');
+    codeInput.classList.remove('error');
+    return;
+  }
+
+  try {
+    if (lang === 'javascript') {
+      const result = esprima.parseScript(code, { tolerant: true });
+      if (result.errors && result.errors.length) {
+        const e = result.errors[0];
+        showError(`⚠️ JavaScript Error at line ${e.lineNumber}: ${e.description}`);
+      } else hideError();
+    } else if (lang === 'html') {
+      const messages = HTMLHint.verify(code);
+      if (messages.length) {
+        const msg = messages[0];
+        showError(`⚠️ HTML Issue at line ${msg.line}: ${msg.message}`);
+      } else hideError();
+    } else if (lang === 'css') {
+      const result = CSSLint.verify(code);
+      if (result.messages.length) {
+        const m = result.messages[0];
+        showError(`⚠️ CSS Issue at line ${m.line}: ${m.message}`);
+      } else hideError();
+    } else if (lang === 'python') {
+      try {
+        Sk.importMainWithBody('<stdin>', false, code);
+        hideError();
+      } catch (err) {
+        showError(`⚠️ Python Error: ${err.toString().split('\n')[0]}`);
+      }
+    }
+  } catch (err) {
+    showError(`⚠️ Syntax Error: ${err.message}`);
+  }
+}
+
+function showError(msg) {
+  errorBox.textContent = msg;
+  errorBox.classList.remove('hidden');
+  codeInput.classList.add('error');
+}
+
+function hideError() {
+  errorBox.textContent = '';
+  errorBox.classList.add('hidden');
+  codeInput.classList.remove('error');
+}
+
 if (saveBtn) saveBtn.addEventListener('click', saveSnippet);
 if (runBtn) runBtn.addEventListener('click', runSnippet);
 if (clearBtn) clearBtn.addEventListener('click', clearEditor);
