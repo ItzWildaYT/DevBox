@@ -353,9 +353,12 @@ const navButtons = document.querySelectorAll('.nav button');
 navButtons.forEach(btn => {
   btn.addEventListener('click', () => {
     const target = btn.getAttribute('data-target');
-    sections.forEach(sec => sec.classList.add('hidden'));
-    document.getElementById(target).classList.remove('hidden');
+
     navButtons.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+
+    sections.forEach(sec => sec.classList.add('hidden'));
+    document.getElementById(target).classList.remove('hidden');
   });
 });
+
