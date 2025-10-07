@@ -7,18 +7,18 @@
   <link rel="icon" type="image/png" href="/assets/logo-placeholder.png">
   <meta name="theme-color" content="#0b0f14">
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
 </head>
 <body>
   <div class="app">
     <aside class="sidebar">
-<div class="logo">
-  <img src="/assets/logo-placeholder.png" alt="DevoBox Logo" class="logo-icon">
-  <div class="logo-text">
-    <span class="logo-title">DevoBox</span>
-    <div class="muted">Save • Debug • Run</div>
-  </div>
-</div>
-
+      <div class="logo">
+        <img src="/assets/logo-placeholder.png" alt="DevoBox Logo" class="logo-icon">
+        <div class="logo-text">
+          <span class="logo-title">DevoBox</span>
+          <div class="muted">Save • Debug • Run</div>
+        </div>
+      </div>
 
       <nav class="nav">
         <a href="/">New Snippet</a>
@@ -26,6 +26,8 @@
         <a href="/my-snippets.html">My Snippets</a>
         <a href="/profile.html">Profile</a>
       </nav>
+
+      <div id="authArea" style="margin-top:auto;"></div>
     </aside>
 
     <main class="main">
@@ -35,6 +37,8 @@
     </main>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
   <script type="module" src="/js/app.js"></script>
 </body>
 </html>
