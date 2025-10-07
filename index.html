@@ -10,30 +10,91 @@
 <body>
   <div class="app">
     <aside class="sidebar">
-      <div class="logo"><div class="mark">DB</div><div><h1>DevBox</h1><div class="muted">Save • Debug • Run</div></div></div>
-      <div class="row" style="margin-bottom:10px"><input id="searchInput" class="search" placeholder="Search snippets, tags, languages..."></div>
-      <div class="nav"><button id="newBtn" class="active">New Snippet</button><button id="libraryBtn">Public Library</button><button id="mySnippetsBtn">My Snippets</button><button id="profileBtn">Profile</button></div>
-      <div style="margin-top:14px"><div class="muted-small">Theme</div><div style="display:flex;gap:8px;margin-top:8px"><button id="themeToggle" class="btn secondary">Toggle Dark</button></div></div>
-      <div style="margin-top:14px"><div id="authArea"><button id="signInBtn" class="btn">Sign in with Google</button></div></div>
+      <div class="logo">
+        <div class="mark">DB</div>
+        <div>
+          <h1>DevBox</h1>
+          <div class="muted">Save • Debug • Run</div>
+        </div>
+      </div>
+      <div class="row" style="margin-bottom:10px">
+        <input id="searchInput" class="search" placeholder="Search snippets, tags, languages...">
+      </div>
+      <div class="nav">
+        <button id="newBtn" class="active">New Snippet</button>
+        <button id="libraryBtn">Public Library</button>
+        <button id="mySnippetsBtn">My Snippets</button>
+        <button id="profileBtn">Profile</button>
+      </div>
+      <div style="margin-top:14px">
+        <div class="muted-small">Theme</div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button id="themeToggle" class="btn secondary">Toggle Dark</button>
+        </div>
+      </div>
+      <div style="margin-top:14px">
+        <div id="authArea">
+          <button id="signInBtn" class="btn">Sign in with Google</button>
+        </div>
+      </div>
     </aside>
+
     <main class="main">
       <div class="editor">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <div><input id="titleInput" type="text" placeholder="Snippet title..." style="width:360px"><select id="langSelect"><option value="javascript">JavaScript</option><option value="python">Python</option><option value="html">HTML</option><option value="css">CSS</option></select><label style="margin-left:8px"><input type="checkbox" id="publicToggle"> Public</label></div>
-          <div class="row"><button id="runBtn" class="btn">Run Snippet</button><button id="saveBtn" class="btn">Save</button><button id="clearBtn" class="btn secondary">Clear</button></div>
+          <div>
+            <input id="titleInput" type="text" placeholder="Snippet title..." style="width:360px">
+            <select id="langSelect">
+              <option value="javascript">JavaScript</option>
+              <option value="python">Python</option>
+              <option value="html">HTML</option>
+              <option value="css">CSS</option>
+            </select>
+            <label style="margin-left:8px">
+              <input type="checkbox" id="publicToggle"> Public
+            </label>
+          </div>
+          <div class="row">
+            <button id="runBtn" class="btn">Run Snippet</button>
+            <button id="saveBtn" class="btn">Save</button>
+            <button id="clearBtn" class="btn secondary">Clear</button>
+          </div>
         </div>
+
         <textarea id="codeInput" class="code" spellcheck="false" placeholder="Write your code here..."></textarea>
-        <div style="display:flex;gap:8px;align-items:center;justify-content:space-between"><div class="row"><input id="tagInput" type="text" placeholder="Add tag and press Enter"><div id="tagList" class="tags"></div></div><div class="muted-small">Live errors: <span id="errorCount">0</span></div></div>
-        <div style="display:flex;gap:8px;margin-top:8px"><button id="copyBtn" class="btn secondary">Copy</button><button id="formatMock" class="btn secondary">Format (Mock)</button><button id="explainBtn" class="btn">Explain Errors</button></div>
-        <div style="margin-top:12px"><pre id="explainBox" style="background:var(--panel);padding:12px;border-radius:8px;display:none;white-space:pre-wrap"></pre></div>
+        <div style="display:flex;gap:8px;align-items:center;justify-content:space-between">
+          <div class="row">
+            <input id="tagInput" type="text" placeholder="Add tag and press Enter">
+            <div id="tagList" class="tags"></div>
+          </div>
+          <div class="muted-small">Live errors: <span id="errorCount">0</span></div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button id="copyBtn" class="btn secondary">Copy</button>
+          <button id="formatMock" class="btn secondary">Format (Mock)</button>
+          <button id="explainBtn" class="btn">Explain Errors</button>
+        </div>
+
+        <div style="margin-top:12px">
+          <pre id="explainBox" style="background:var(--panel);padding:12px;border-radius:8px;display:none;white-space:pre-wrap"></pre>
+        </div>
       </div>
     </main>
+
     <aside class="right">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h3 style="margin:0">Public Library</h3><div class="muted-small">Browse & fork</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <h3 style="margin:0">Public Library</h3>
+        <div class="muted-small">Browse & fork</div>
+      </div>
       <div id="libList" class="lib-list"></div>
-      <div style="margin-top:12px"><div class="muted-small">Run Output</div><iframe id="runFrame" style="width:100%;height:200px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:#020409;margin-top:6px"></iframe></div>
+      <div style="margin-top:12px">
+        <div class="muted-small">Run Output</div>
+        <iframe id="runFrame" style="width:100%;height:200px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:#020409;margin-top:6px"></iframe>
+      </div>
     </aside>
   </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
