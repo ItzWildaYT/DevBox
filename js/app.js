@@ -16,7 +16,6 @@ import {
 } from './firebase.js'
 
 let currentUser = null
-
 const codeInput = document.getElementById('codeInput')
 const runFrame = document.getElementById('runFrame')
 const saveBtn = document.getElementById('saveBtn')
@@ -28,6 +27,7 @@ const libList = document.getElementById('libList')
 const mySnippetsList = document.getElementById('mySnippetsList')
 const signOutBtn = document.getElementById('signOutBtn')
 const searchInput = document.getElementById('searchInput')
+const searchMy = document.getElementById('searchMy')
 const langSelect = document.getElementById('langSelect')
 const errorBox = document.getElementById('errorBox')
 const saveModal = document.getElementById('saveModal')
@@ -88,7 +88,8 @@ if (saveBtn) saveBtn.addEventListener('click', () => saveModal ? openSaveModal()
 if (runBtn) runBtn.addEventListener('click', runSnippet)
 if (clearBtn) clearBtn.addEventListener('click', clearEditor)
 if (signOutBtn) signOutBtn.addEventListener('click', () => signOut(auth))
-if (searchInput) searchInput.addEventListener('input', renderLibrary)
+if (searchInput) searchInput.addEventListener('input', () => renderLibrary(searchInput.value))
+if (searchMy) searchMy.addEventListener('input', () => renderMySnippets(searchMy.value))
 if (cancelSave) cancelSave.addEventListener('click', closeSaveModal)
 if (confirmSave) confirmSave.addEventListener('click', finalizeSave)
 
@@ -105,41 +106,31 @@ function analyzeCode() {
   const lang = langSelect.value
   if (!code) return hideError()
   try {
-    if (lang === 'javascript') {
-      if (typeof esprima !== 'undefined') {
-        const result = esprima.parseScript(code, { tolerant: true, loc: true })
-        if (result.errors && result.errors.length > 0) {
-          const e = result.errors[0]
-          showError(`⚠️ JavaScript Error at line ${e.lineNumber || '?'}: ${e.description || e.message}`)
-        } else hideError()
-      } else showError('⚠️ JavaScript analyzer not loaded.')
-    } else if (lang === 'html') {
-      if (typeof HTMLHint !== 'undefined' && HTMLHint.verify) {
-        const messages = HTMLHint.verify(code)
-        if (messages.length) showError(`⚠️ HTML Issue at line ${messages[0].line || '?'}: ${messages[0].message}`)
-        else hideError()
-      } else showError('⚠️ HTML analyzer not loaded.')
-    } else if (lang === 'css') {
-      if (typeof CSSLint !== 'undefined' && CSSLint.verify) {
-        const result = CSSLint.verify(code)
-        if (result.messages && result.messages.length) {
-          const m = result.messages[0]
-          showError(`⚠️ CSS ${m.type === 'error' ? 'Error' : 'Warning'} at line ${m.line || '?'}: ${m.message}`)
-        } else hideError()
-      } else showError('⚠️ CSS analyzer not loaded.')
-    } else if (lang === 'python') {
-      if (typeof Sk !== 'undefined' && Sk.importMainWithBody) {
-        try {
-          Sk.configure({ output: () => {}, read: x => Sk.builtinFiles.files[x] || null })
-          Sk.importMainWithBody('<stdin>', false, code)
-          hideError()
-        } catch (err) {
-          showError(`⚠️ Python Error: ${err.toString().split('\n')[0]}`)
-        }
-      } else showError('⚠️ Python analyzer not loaded.')
+    if (lang === 'javascript' && typeof esprima !== 'undefined') {
+      const result = esprima.parseScript(code, { tolerant: true, loc: true })
+      if (result.errors?.length) {
+        const e = result.errors[0]
+        showError(`⚠️ JS Error line ${e.lineNumber || '?'}: ${e.description}`)
+      } else hideError()
+    } else if (lang === 'html' && typeof HTMLHint !== 'undefined') {
+      const messages = HTMLHint.verify(code)
+      if (messages.length) showError(`⚠️ HTML line ${messages[0].line}: ${messages[0].message}`)
+      else hideError()
+    } else if (lang === 'css' && typeof CSSLint !== 'undefined') {
+      const r = CSSLint.verify(code)
+      if (r.messages?.length) showError(`⚠️ CSS line ${r.messages[0].line}: ${r.messages[0].message}`)
+      else hideError()
+    } else if (lang === 'python' && typeof Sk !== 'undefined') {
+      try {
+        Sk.configure({ output: () => {}, read: x => Sk.builtinFiles.files[x] || null })
+        Sk.importMainWithBody('<stdin>', false, code)
+        hideError()
+      } catch (e) {
+        showError(`⚠️ Python Error: ${e.toString().split('\n')[0]}`)
+      }
     }
   } catch (err) {
-    showError(`⚠️ Syntax Error: ${err.message || 'Unknown parsing error'}`)
+    showError(`⚠️ Syntax Error: ${err.message}`)
   }
 }
 
@@ -156,25 +147,19 @@ function hideError() {
 }
 
 async function finalizeSave() {
-  if (!currentUser) return showToast('error', 'Please sign in first')
+  if (!currentUser) return showToast('error', 'Sign in first')
   const title = snippetTitle.value.trim() || 'Untitled Snippet'
-  const desc = snippetDesc.value.trim() || ''
-  const lang = snippetLang.value || langSelect.value || 'javascript'
+  const desc = snippetDesc.value.trim()
+  const lang = snippetLang.value || langSelect.value
   const tags = snippetTags.value.trim() ? snippetTags.value.split(',').map(t => t.trim()).filter(Boolean) : []
   const content = codeInput.value.trim()
-  if (!content) return showToast('error', 'Cannot save empty code')
+  if (!content) return showToast('error', 'Empty code')
   const owner = saveToProfile.checked ? currentUser.uid : null
   const isPublic = publishPublic.checked
   const snippet = {
-    title,
-    description: desc,
-    tags,
-    content,
-    lang,
-    owner,
-    ownerName: currentUser.displayName || 'Anon',
-    public: isPublic,
-    createdAt: serverTimestamp()
+    title, description: desc, tags, content, lang,
+    owner, ownerName: currentUser.displayName || 'Anon',
+    public: isPublic, createdAt: serverTimestamp()
   }
   try {
     await addDoc(collection(db, 'snippets'), snippet)
@@ -193,7 +178,7 @@ async function finalizeSave() {
 function openSaveModal() {
   snippetTitle.value = ''
   snippetDesc.value = ''
-  snippetLang.value = langSelect.value || 'javascript'
+  snippetLang.value = langSelect.value
   snippetTags.value = ''
   saveModal.classList.remove('hidden')
 }
@@ -229,9 +214,8 @@ function clearEditor() {
   hideError()
 }
 
-async function renderLibrary() {
+async function renderLibrary(search = '') {
   libList.innerHTML = ''
-  const search = searchInput.value.trim().toLowerCase()
   const q = query(collection(db, 'snippets'), orderBy('createdAt', 'desc'), limit(200))
   const snapshot = await getDocs(q)
   let found = false
@@ -240,28 +224,26 @@ async function renderLibrary() {
     if (!s || !s.public) return
     const title = s.title || 'Untitled'
     const owner = s.ownerName || 'Anon'
-    if (search && !title.toLowerCase().includes(search) && !owner.toLowerCase().includes(search)) return
-    const date = s.createdAt?.toDate ? s.createdAt.toDate().toLocaleString() : 'Unknown date'
-    const desc = s.description ? `<div class="muted-small" style="margin-top:6px">${escapeHtml(s.description.substring(0, 200))}</div>` : ''
+    if (search && !title.toLowerCase().includes(search.toLowerCase()) && !owner.toLowerCase().includes(search.toLowerCase())) return
+    const date = s.createdAt?.toDate ? s.createdAt.toDate().toLocaleString() : 'Unknown'
+    const desc = s.description ? `<div class="muted-small" style="margin-top:6px">${escapeHtml(s.description)}</div>` : ''
     const tags = s.tags?.length ? `<div style="margin-top:8px;"><small class="muted-small">${s.tags.map(t=>`#${escapeHtml(t)}`).join(' ')}</small></div>` : ''
     const card = document.createElement('div')
     card.className = 'snippet-card'
     card.innerHTML = `
       <h3>${escapeHtml(title)}</h3>
-      <div class="snippet-meta muted-small">${escapeHtml(s.lang)} • by ${escapeHtml(owner)} • ${escapeHtml(date)}</div>
-      <pre style="margin-top:8px;"><code class="language-javascript">${escapeHtml(s.content.substring(0, 400))}</code></pre>
-      ${desc}${tags}`
+      <div class="snippet-meta muted-small">${escapeHtml(s.lang)} • ${escapeHtml(owner)} • ${escapeHtml(date)}</div>
+      <pre style="margin-top:8px;"><code>${escapeHtml(s.content.substring(0,400))}</code></pre>${desc}${tags}`
     libList.appendChild(card)
-    if (window.Prism && card.querySelector('code')) Prism.highlightElement(card.querySelector('code'))
     found = true
   })
-  if (!found) libList.innerHTML = "<p class='muted'>No public snippets found.</p>"
+  if (!found) libList.innerHTML = "<p class='muted'>No snippets found.</p>"
 }
 
-async function renderMySnippets() {
+async function renderMySnippets(search = '') {
   mySnippetsList.innerHTML = ''
   if (!currentUser) {
-    mySnippetsList.innerHTML = "<p class='muted'>Please sign in to view your snippets.</p>"
+    mySnippetsList.innerHTML = "<p class='muted'>Sign in to view snippets.</p>"
     return
   }
   const q = query(collection(db, 'snippets'), where('owner', '==', currentUser.uid), orderBy('createdAt', 'desc'), limit(200))
@@ -270,21 +252,24 @@ async function renderMySnippets() {
     mySnippetsList.innerHTML = "<p class='muted'>You haven't saved any snippets yet.</p>"
     return
   }
+  let found = false
   snapshot.forEach(docSnap => {
     const s = docSnap.data()
-    const date = s.createdAt?.toDate ? s.createdAt.toDate().toLocaleString() : 'Unknown date'
-    const desc = s.description ? `<div class="muted-small" style="margin-top:6px">${escapeHtml(s.description.substring(0, 200))}</div>` : ''
+    const title = s.title || 'Untitled'
+    const date = s.createdAt?.toDate ? s.createdAt.toDate().toLocaleString() : 'Unknown'
+    if (search && !title.toLowerCase().includes(search.toLowerCase())) return
+    const desc = s.description ? `<div class="muted-small" style="margin-top:6px">${escapeHtml(s.description)}</div>` : ''
     const tags = s.tags?.length ? `<div style="margin-top:8px;"><small class="muted-small">${s.tags.map(t=>`#${escapeHtml(t)}`).join(' ')}</small></div>` : ''
     const card = document.createElement('div')
     card.className = 'snippet-card'
     card.innerHTML = `
-      <h3>${escapeHtml(s.title || 'Untitled')}</h3>
+      <h3>${escapeHtml(title)}</h3>
       <div class="snippet-meta muted-small">${escapeHtml(s.lang)} • ${s.public ? '🌍 Public' : '🔒 Private'} • ${escapeHtml(date)}</div>
-      <pre style="margin-top:8px;"><code class="language-javascript">${escapeHtml(s.content.substring(0, 400))}</code></pre>
-      ${desc}${tags}`
+      <pre style="margin-top:8px;"><code>${escapeHtml(s.content.substring(0,400))}</code></pre>${desc}${tags}`
     mySnippetsList.appendChild(card)
-    if (window.Prism && card.querySelector('code')) Prism.highlightElement(card.querySelector('code'))
+    found = true
   })
+  if (!found) mySnippetsList.innerHTML = "<p class='muted'>No snippets found.</p>"
 }
 
 function escapeHtml(str) {
@@ -304,7 +289,6 @@ function updateProfileUI() {
     img.style.marginRight = '8px'
     const name = document.createElement('span')
     name.textContent = currentUser.displayName || 'User'
-    name.style.marginRight = '8px'
     const out = document.createElement('button')
     out.className = 'btn secondary'
     out.textContent = 'Sign out'
