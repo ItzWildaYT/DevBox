@@ -7,11 +7,11 @@
   <link rel="icon" type="image/png" href="/assets/logo-placeholder.png">
   <meta name="theme-color" content="#0b0f14">
   <link rel="stylesheet" href="/css/style.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/esprima/4.0.1/esprima.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/htmlhint@latest/dist/htmlhint.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/CSSLint/1.0.5/csslint.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/esprima/4.0.1/esprima.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/htmlhint@latest/dist/htmlhint.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/CSSLint/1.0.5/csslint.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
 </head>
 
 <body>
@@ -65,6 +65,33 @@
         <iframe id="runFrame"></iframe>
       </div>
     </main>
+  </div>
+
+  <div id="saveModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>Save Snippet</h3>
+      <label>Title:</label>
+      <input type="text" id="snippetTitle" placeholder="Enter snippet title">
+
+      <label>Description:</label>
+      <textarea id="snippetDesc" placeholder="Describe your snippet..."></textarea>
+
+      <label>Language:</label>
+      <select id="snippetLang">
+        <option value="javascript">JavaScript</option>
+        <option value="html">HTML</option>
+        <option value="css">CSS</option>
+        <option value="python">Python</option>
+      </select>
+
+      <label>Tags (comma-separated):</label>
+      <input type="text" id="snippetTags" placeholder="e.g. arrays, loops, DOM">
+
+      <div class="modal-actions">
+        <button id="cancelSave" class="btn secondary">Cancel</button>
+        <button id="confirmSave" class="btn">Save Snippet</button>
+      </div>
+    </div>
   </div>
 
   <script type="module" src="/js/app.js"></script>
