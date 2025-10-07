@@ -20,12 +20,12 @@
       <div class="row" style="margin-bottom:10px">
         <input id="searchInput" class="search" placeholder="Search snippets, tags, languages...">
       </div>
-      <div class="nav">
-        <button id="newBtn" class="active">New Snippet</button>
-        <button id="libraryBtn">Public Library</button>
-        <button id="mySnippetsBtn">My Snippets</button>
-        <button id="profileBtn">Profile</button>
-      </div>
+<div class="nav">
+  <button class="active" data-target="newSnippet">New Snippet</button>
+  <button data-target="publicLibrary">Public Library</button>
+  <button data-target="mySnippets">My Snippets</button>
+  <button data-target="profile">Profile</button>
+</div>
       <div style="margin-top:14px">
         <div class="muted-small">Theme</div>
         <div style="display:flex;gap:8px;margin-top:8px">
@@ -40,47 +40,27 @@
     </aside>
 
     <main class="main">
-      <div class="editor">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <input id="titleInput" type="text" placeholder="Snippet title..." style="width:360px">
-            <select id="langSelect">
-              <option value="javascript">JavaScript</option>
-              <option value="python">Python</option>
-              <option value="html">HTML</option>
-              <option value="css">CSS</option>
-            </select>
-            <label style="margin-left:8px">
-              <input type="checkbox" id="publicToggle"> Public
-            </label>
-          </div>
-          <div class="row">
-            <button id="runBtn" class="btn">Run Snippet</button>
-            <button id="saveBtn" class="btn">Save</button>
-            <button id="clearBtn" class="btn secondary">Clear</button>
-          </div>
-        </div>
+  <section id="newSnippet" class="section">
+    <h2>New Snippet</h2>
+    <textarea id="codeInput" class="code" placeholder="Write your code..."></textarea>
+    <button class="btn">Save</button>
+  </section>
 
-        <textarea id="codeInput" class="code" spellcheck="false" placeholder="Write your code here..."></textarea>
-        <div style="display:flex;gap:8px;align-items:center;justify-content:space-between">
-          <div class="row">
-            <input id="tagInput" type="text" placeholder="Add tag and press Enter">
-            <div id="tagList" class="tags"></div>
-          </div>
-          <div class="muted-small">Live errors: <span id="errorCount">0</span></div>
-        </div>
+  <section id="publicLibrary" class="section hidden">
+    <h2>Public Library</h2>
+    <div id="libraryContainer"></div>
+  </section>
 
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button id="copyBtn" class="btn secondary">Copy</button>
-          <button id="formatMock" class="btn secondary">Format (Mock)</button>
-          <button id="explainBtn" class="btn">Explain Errors</button>
-        </div>
+  <section id="mySnippets" class="section hidden">
+    <h2>My Snippets</h2>
+    <div id="mySnippetsContainer"></div>
+  </section>
 
-        <div style="margin-top:12px">
-          <pre id="explainBox" style="background:var(--panel);padding:12px;border-radius:8px;display:none;white-space:pre-wrap"></pre>
-        </div>
-      </div>
-    </main>
+  <section id="profile" class="section hidden">
+    <h2>Profile</h2>
+    <p>Signed in as Itz Wilda</p>
+  </section>
+</main>
 
     <aside class="right">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
