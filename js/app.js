@@ -9,10 +9,9 @@ import {
   addDoc,
   query,
   orderBy,
+  where,
   getDocs,
   serverTimestamp,
-  doc,
-  updateDoc,
   limit
 } from './firebase.js';
 
@@ -21,69 +20,38 @@ let currentUser = null;
 const codeInput = document.getElementById('codeInput');
 const runFrame = document.getElementById('runFrame');
 const saveBtn = document.getElementById('saveBtn');
+const runBtn = document.getElementById('runBtn');
+const clearBtn = document.getElementById('clearBtn');
 const publishPublic = document.getElementById('publishPublic');
 const saveToProfile = document.getElementById('saveToProfile');
-const rightPanel = document.getElementById('rightPanel');
 const libList = document.getElementById('libList');
+const mySnippetsList = document.getElementById('mySnippetsList');
+const signOutBtn = document.getElementById('signOutBtn');
+const searchInput = document.getElementById('searchInput');
 
-const navButtons = document.querySelectorAll('.nav button');
-const sections = document.querySelectorAll('.section');
+if (saveBtn) saveBtn.addEventListener('click', saveSnippet);
+if (runBtn) runBtn.addEventListener('click', runSnippet);
+if (clearBtn) clearBtn.addEventListener('click', clearEditor);
+if (signOutBtn) signOutBtn.addEventListener('click', () => signOut(auth));
+if (searchInput) searchInput.addEventListener('input', renderLibrary);
 
-saveBtn.addEventListener('click', saveSnippet);
-document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-document.getElementById('signInBtn').addEventListener('click', googleSignIn);
-document.getElementById('searchInput').addEventListener('input', renderLibrary);
-
-// Navigation system
-navButtons.forEach(btn => {
-  btn.addEventListener('click', () => {
-    const target = btn.getAttribute('data-target');
-    navButtons.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-
-    sections.forEach(sec => sec.classList.add('hidden'));
-    document.getElementById(target).classList.remove('hidden');
-
-    // Show/hide right panel
-    if (target === 'publicLibrary') {
-      rightPanel.classList.remove('hidden');
-      renderLibrary();
-    } else {
-      rightPanel.classList.add('hidden');
-    }
-  });
+onAuthStateChanged(auth, async (user) => {
+  currentUser = user;
+  if (window.location.pathname.endsWith('my-snippets.html')) await renderMySnippets();
+  if (window.location.pathname.endsWith('library.html')) await renderLibrary();
+  updateProfileUI();
 });
-
-function toggleTheme() {
-  document.documentElement.classList.toggle('light');
-  if (document.documentElement.classList.contains('light')) {
-    document.body.style.background = 'linear-gradient(180deg,#f7fbff,#e6eef8)';
-    document.body.style.color = '#0b1220';
-  } else {
-    document.body.style.background = 'linear-gradient(180deg,#02040a,#0b0f14)';
-    document.body.style.color = '#e6eef8';
-  }
-}
-
-function runSnippet() {
-  const code = codeInput.value;
-  const prefix = `<!doctype html><html><body><script>try {`;
-  const suffix = `} catch(e) { document.body.innerText = "Runtime error: " + e.message; }</script></body></html>`;
-  runFrame.srcdoc = prefix + code + suffix;
-}
 
 async function saveSnippet() {
   if (!currentUser) {
     alert('Please sign in first.');
     return;
   }
-
   const content = codeInput.value.trim();
   if (!content) {
     alert('Cannot save empty code.');
     return;
   }
-
   const snippet = {
     title: 'Untitled Snippet',
     content,
@@ -93,24 +61,35 @@ async function saveSnippet() {
     public: publishPublic.checked,
     createdAt: serverTimestamp()
   };
-
   try {
     await addDoc(collection(db, 'snippets'), snippet);
-    alert('Snippet saved!');
+    alert('Snippet saved successfully.');
   } catch (e) {
     alert('Save failed: ' + e.message);
   }
 }
 
+function runSnippet() {
+  const code = codeInput.value;
+  const html = `<!doctype html><html><body><script>try{${code}}catch(e){document.body.innerText='Runtime error: '+e.message}</script></body></html>`;
+  runFrame.srcdoc = html;
+}
+
+function clearEditor() {
+  codeInput.value = '';
+  runFrame.srcdoc = '';
+}
+
 async function renderLibrary() {
   libList.innerHTML = '';
-  const q = query(collection(db, 'snippets'), orderBy('createdAt', 'desc'), limit(50));
+  const search = searchInput.value.trim().toLowerCase();
+  const q = query(collection(db, 'snippets'), orderBy('createdAt', 'desc'), limit(100));
   const snapshot = await getDocs(q);
-
+  let found = false;
   snapshot.forEach(docSnap => {
     const s = docSnap.data();
     if (!s.public) return;
-
+    if (search && !s.title.toLowerCase().includes(search) && !(s.ownerName || '').toLowerCase().includes(search)) return;
     const card = document.createElement('div');
     card.className = 'snippet-card';
     card.innerHTML = `
@@ -120,52 +99,61 @@ async function renderLibrary() {
     `;
     libList.appendChild(card);
     Prism.highlightElement(card.querySelector('code'));
+    found = true;
+  });
+  if (!found) libList.innerHTML = "<p class='muted'>No snippets found.</p>";
+}
+
+async function renderMySnippets() {
+  mySnippetsList.innerHTML = '';
+  if (!currentUser) {
+    mySnippetsList.innerHTML = "<p class='muted'>Please sign in to view your snippets.</p>";
+    return;
+  }
+  const q = query(collection(db, 'snippets'), where('owner', '==', currentUser.uid), orderBy('createdAt', 'desc'), limit(100));
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) {
+    mySnippetsList.innerHTML = "<p class='muted'>You haven't saved any snippets yet.</p>";
+    return;
+  }
+  snapshot.forEach(docSnap => {
+    const s = docSnap.data();
+    const card = document.createElement('div');
+    card.className = 'snippet-card';
+    card.innerHTML = `
+      <h3>${s.title}</h3>
+      <div class="snippet-meta muted-small">${s.lang} • ${s.public ? '🌍 Public' : '🔒 Private'}</div>
+      <pre style="margin-top:8px;"><code class="language-javascript">${escapeHtml(s.content.substring(0, 400))}</code></pre>
+    `;
+    mySnippetsList.appendChild(card);
+    Prism.highlightElement(card.querySelector('code'));
   });
 }
 
 function escapeHtml(str) {
   return str.replace(/[&<>"']/g, (m) => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;'
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
   }[m]));
 }
 
-async function googleSignIn() {
-  const provider = new GoogleAuthProvider();
-  try {
-    const result = await signInWithPopup(auth, provider);
-    currentUser = result.user;
-    onAuthChange(currentUser);
-  } catch (e) {
-    alert(e.message);
-  }
-}
-
-function onAuthChange(user) {
-  currentUser = user;
+function updateProfileUI() {
   const authArea = document.getElementById('authArea');
+  if (!authArea) return;
   authArea.innerHTML = '';
-
-  if (user) {
+  if (currentUser) {
     const img = document.createElement('img');
-    img.src = user.photoURL;
+    img.src = currentUser.photoURL;
     img.style.width = '36px';
     img.style.height = '36px';
     img.style.borderRadius = '6px';
     img.style.marginRight = '8px';
-
     const name = document.createElement('span');
-    name.textContent = user.displayName;
+    name.textContent = currentUser.displayName;
     name.style.marginRight = '8px';
-
     const out = document.createElement('button');
     out.className = 'btn secondary';
     out.textContent = 'Sign out';
     out.onclick = () => signOut(auth);
-
     authArea.appendChild(img);
     authArea.appendChild(name);
     authArea.appendChild(out);
@@ -178,7 +166,13 @@ function onAuthChange(user) {
   }
 }
 
-onAuthStateChanged(auth, (u) => {
-  if (u) onAuthChange(u);
-  else onAuthChange(null);
-});
+async function googleSignIn() {
+  const provider = new GoogleAuthProvider();
+  try {
+    const result = await signInWithPopup(auth, provider);
+    currentUser = result.user;
+    updateProfileUI();
+  } catch (e) {
+    alert(e.message);
+  }
+}
