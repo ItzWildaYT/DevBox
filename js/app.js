@@ -37,7 +37,21 @@ const snippetLang = document.getElementById('snippetLang')
 const snippetTags = document.getElementById('snippetTags')
 const cancelSave = document.getElementById('cancelSave')
 const confirmSave = document.getElementById('confirmSave')
-
+const params = new URLSearchParams(window.location.search);
+if (params.has('load') && codeInput) {
+  try {
+    const data = JSON.parse(decodeURIComponent(params.get('load')));
+    if (data.code) {
+      codeInput.value = data.code;
+      if (data.lang && langSelect) langSelect.value = data.lang;
+      showToast('success', 'Snippet loaded from Public Library');
+      analyzeCode();
+      window.history.replaceState({}, document.title, '/');
+    }
+  } catch (e) {
+    console.error('Failed to load snippet:', e);
+  }
+}
 let toastContainer = document.getElementById('toastContainer')
 if (!toastContainer) {
   toastContainer = document.createElement('div')
@@ -230,11 +244,19 @@ async function renderLibrary(search = '') {
     const tags = s.tags?.length ? `<div style="margin-top:8px;"><small class="muted-small">${s.tags.map(t=>`#${escapeHtml(t)}`).join(' ')}</small></div>` : ''
     const card = document.createElement('div')
     card.className = 'snippet-card'
-    card.innerHTML = `
-      <h3>${escapeHtml(title)}</h3>
-      <div class="snippet-meta muted-small">${escapeHtml(s.lang)} • ${escapeHtml(owner)} • ${escapeHtml(date)}</div>
-      <pre style="margin-top:8px;"><code>${escapeHtml(s.content.substring(0,400))}</code></pre>${desc}${tags}`
-    libList.appendChild(card)
+const encoded = encodeURIComponent(JSON.stringify({
+  code: s.content,
+  lang: s.lang
+}));
+card.innerHTML = `
+  <h3>${escapeHtml(title)}</h3>
+  <div class="snippet-meta muted-small">${escapeHtml(s.lang)} • ${escapeHtml(owner)} • ${escapeHtml(date)}</div>
+  <pre style="margin-top:8px;"><code>${escapeHtml(s.content.substring(0,400))}</code></pre>${desc}${tags}
+  <div style="margin-top:10px;">
+    <button class="btn small" onclick="window.location.href='https://devobox.netlify.app/?load=${encoded}'">Load</button>
+  </div>
+`;
+libList.appendChild(card);
     found = true
   })
   if (!found) libList.innerHTML = "<p class='muted'>No snippets found.</p>"
