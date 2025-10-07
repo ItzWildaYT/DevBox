@@ -199,6 +199,10 @@ button:focus {
     grid-auto-rows: auto;
   }
 
+.section.hidden {
+  display: none;
+}
+ 
   .right {
     order: 3;
   }
